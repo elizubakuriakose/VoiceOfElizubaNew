@@ -1,0 +1,30 @@
+
+<!doctype html>
+<html><head>
+<meta charset="utf-8"><title>Profile - VOICE OF ELIZUBA</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="stylesheet" href="styles.css">
+<script src="main.js" defer></script>
+<script>
+document.addEventListener('DOMContentLoaded', ()=>{
+  loadFirebaseAndInit(()=>{
+    db.collection('meta').doc('profile').get().then(d=>{
+      if(d.exists){ const p=d.data(); document.getElementById('profile').innerHTML = `<h2>${escapeHtml(p.name||'')}</h2><p>${escapeHtml(p.bio||'')}</p>`;}
+      else document.getElementById('profile').innerHTML = '<p class="small">Profile not set.</p>';
+    });
+  });
+});
+
+function escapeHtml(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;'); }
+</script>
+</head>
+<body>
+  <div class="bg" style="background-image:url('profilebg.png')">
+    <div class="container">
+      <h1>Profile</h1>
+      <div id="profile"></div>
+      <div class="home-link"><a class="btn" href="index.html">Home</a></div>
+    </div>
+  </div>
+</body>
+</html>

@@ -1,0 +1,45 @@
+
+<!doctype html>
+<html><head>
+<meta charset="utf-8"><title>Manage Blogs - VOICE OF ELIZUBA</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="stylesheet" href="styles.css">
+<script src="main.js" defer></script>
+<script>
+document.addEventListener('DOMContentLoaded', ()=>{
+  if(!localStorage.getItem('voe_admin')){ alert('Please login'); location.href='adminlogin.html'; return; }
+  loadFirebaseAndInit(()=>{
+    const list = document.getElementById('blogList');
+    db.collection('blogs').orderBy('createdAt','desc').get().then(snap=>{
+      if(snap.empty){ list.innerHTML='<p class="small">No blogs.</p>'; return; }
+      snap.forEach(doc=>{
+        const b = doc.data();
+        const div = document.createElement('div');
+        div.className='blog-card';
+        div.innerHTML = `<h3>${escapeHtml(b.title)}</h3><p class="small">${escapeHtml(b.summary||'')}</p>
+                         <div><a class="btn" href="blog.html?id=${doc.id}">View</a> <button class="btn" onclick="deleteBlog('${doc.id}')">Delete</button></div>`;
+        list.appendChild(div);
+      });
+    });
+  });
+});
+
+function deleteBlog(id){
+  if(!confirm('Delete this blog?')) return;
+  db.collection('blogs').doc(id).delete().then(()=>{ alert('Deleted'); location.reload(); }).catch(e=>{ console.error(e); alert('Failed'); });
+}
+
+function escapeHtml(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;'); }
+</script>
+</head>
+<body>
+  <div class="bg" style="background-image:url('mgbg.png')">
+    <div class="container">
+      <nav><a class="btn ghost" href="admin.html" style="border: 2px solid white; color: white;">Back</a></nav>
+      <h1>Manage Blogs</h1>
+      <div id="blogList"></div>
+      <div class="home-link"><a class="btn" href="index.html">Home</a></div>
+    </div>
+  </div>
+</body>
+</html>

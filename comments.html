@@ -1,0 +1,61 @@
+
+<!doctype html>
+<html><head>
+<meta charset="utf-8"><title>Comments - VOICE OF ELIZUBA</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="stylesheet" href="styles.css">
+<script src="main.js" defer></script>
+<script>
+document.addEventListener('DOMContentLoaded', ()=>{
+  if(!localStorage.getItem('voe_admin')){ alert('Please login'); location.href='adminlogin.html'; return; }
+  loadFirebaseAndInit(()=>{
+    const list = document.getElementById('commentsList');
+    db.collection('comments').orderBy('createdAt','desc').get().then(snap=>{
+    if(snap.empty){ list.innerHTML='<p class="small">No comments yet.</p>'; return; }
+    
+    snap.forEach(doc=>{
+        const c = doc.data();
+        const div = document.createElement('div');
+        div.className = 'blog-card';
+
+        // fetch blog title from blogs collection
+        db.collection('blogs').doc(c.blogId).get().then(blogDoc=>{
+            let blogTitle = blogDoc.exists ? blogDoc.data().title : c.blogId;
+            
+            div.innerHTML = `
+                <p><strong>${escapeHtml(c.name||'Anonymous')}</strong> 
+                   <span class="small" style="color:black;">${fmtDate(c.createdAt)}</span></p>
+                <p>${escapeHtml(c.text)}</p>
+                <p class="small">On blog: ${escapeHtml(blogTitle)}</p>
+                <div><button class="btn" onclick="deleteComment('${doc.id}')">Delete</button></div>
+            `;
+            
+            list.appendChild(div);
+        }).catch(err=>{
+            console.error('Error fetching blog title', err);
+        });
+    });
+  });
+
+  });
+});
+
+function deleteComment(id){
+  if(!confirm('Delete this comment?')) return;
+  db.collection('comments').doc(id).delete().then(()=>{ alert('Deleted'); location.reload(); }).catch(e=>{ console.error(e); alert('Failed'); });
+}
+
+function escapeHtml(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;'); }
+</script>
+</head>
+<body>
+  <div class="bg" style="background-image:url('commentsbg.png')">
+    <div class="container">
+      <nav><a class="btn ghost" href="admin.html" style="border: 2px solid white; color: white;">Back</a></nav>
+      <h1>All Comments</h1>
+      <div id="commentsList"></div>
+      <div class="home-link"><a class="btn" href="index.html">Home</a></div>
+    </div>
+  </div>
+</body>
+</html>

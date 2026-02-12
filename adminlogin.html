@@ -1,0 +1,110 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Admin Login - VOICE OF ELIZUBA</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="stylesheet" href="styles.css">
+<script src="main.js" defer></script>
+
+<script>
+document.addEventListener('DOMContentLoaded', ()=>{
+
+  const form = document.getElementById('loginForm');
+
+  form.addEventListener('submit', (e)=>{
+    e.preventDefault();
+
+    const user = document.getElementById('user').value.trim();
+    const pass = document.getElementById('pass').value.trim();
+
+    if(!user || !pass){
+      alert("Enter username and password");
+      return;
+    }
+
+    // Wait for Firebase to load
+    loadFirebaseAndInit(()=> {
+
+      db.collection("admins")
+        .where("username", "==", user)
+        .where("password", "==", pass)
+        .get()
+        .then((snapshot)=>{
+
+          if(!snapshot.empty){
+            
+            // Save login session
+            localStorage.setItem("voe_admin","1");
+
+            // Redirect to admin panel
+            window.location.href = "admin.html";
+
+          } else {
+            alert("Invalid credentials");
+          }
+
+        })
+        .catch((error)=>{
+          console.error("Login error:", error);
+          alert("Login failed. Check console.");
+        });
+
+    });
+
+  });
+
+});
+</script>
+
+<style>
+#loginForm input {
+  width: 100%;
+  padding: 14px;
+  font-size: 18px;
+  border-radius: 10px;
+  border: 1px solid #ccc;
+  margin-bottom: 14px;
+}
+
+#loginForm button.btn {
+  width: 100%;
+  padding: 16px;
+  font-size: 20px;
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+.home-link .btn {
+  background: rgb(6,195,242) !important;
+  color: white !important;
+  font-size: 20px;
+  padding: 14px 24px;
+  border-radius: 10px;
+  display: inline-block;
+  margin-top: 20px;
+}
+</style>
+
+</head>
+
+<body>
+  <div class="bg" style="background-image:url('adminloginbg.png')">
+    <div class="container center">
+      <h1>Admin Login</h1>
+
+      <form id="loginForm" style="max-width:420px; margin:auto">
+        <input id="user" placeholder="Enter username" required>
+        <input id="pass" type="password" placeholder="Enter password" required>
+        <div style="height:12px"></div>
+        <button class="btn" type="submit">Login</button>
+      </form>
+
+      <div class="home-link">
+        <a class="btn" href="index.html">Home</a>
+      </div>
+
+    </div>
+  </div>
+</body>
+</html>

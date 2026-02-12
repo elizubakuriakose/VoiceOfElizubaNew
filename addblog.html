@@ -1,0 +1,42 @@
+
+<!doctype html>
+<html><head>
+<meta charset="utf-8"><title>Add Blog - VOICE OF ELIZUBA</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="stylesheet" href="styles.css">
+<script src="main.js" defer></script>
+<script>
+document.addEventListener('DOMContentLoaded', ()=>{
+  if(!localStorage.getItem('voe_admin')){ alert('Please login'); location.href='adminlogin.html'; return; }
+  document.getElementById('addForm').addEventListener('submit', (e)=>{
+    e.preventDefault();
+    const title = document.getElementById('title').value.trim();
+    const summary = document.getElementById('summary').value.trim();
+    const content = document.getElementById('content').value.trim();
+    if(!title || !content){ alert('Provide title and content'); return; }
+    loadFirebaseAndInit(()=> {
+      db.collection('blogs').add({
+        title, summary, content, createdAt: firebase.firestore.FieldValue.serverTimestamp()
+      }).then(()=>{ alert('Blog added'); location.href='viewblogs.html'; })
+      .catch(e=>{ console.error(e); alert('Failed to add'); });
+    });
+  });
+});
+</script>
+</head>
+<body>
+  <div class="bg" style="background-image:url('addblogbg.png')">
+    <div class="container">
+      <nav><a class="btn ghost" href="admin.html" style="border: 2px solid white; color: white;">Back</a></nav>
+      <h1>Add Blog</h1>
+      <form id="addForm">
+        <label>Title</label><input id="title" required>
+        <label>Summary (short)</label><input id="summary">
+        <label>Content</label><textarea id="content" rows="10" required></textarea>
+        <div><button class="btn" type="submit">Add</button></div>
+      </form>
+      <div class="home-link"><a class="btn" href="index.html">Home</a></div>
+    </div>
+  </div>
+</body>
+</html>

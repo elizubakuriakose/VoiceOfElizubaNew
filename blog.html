@@ -1,0 +1,84 @@
+
+<!doctype html>
+<html><head>
+<meta charset="utf-8"><title>Blog - VOICE OF ELIZUBA</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="stylesheet" href="styles.css">
+<script src="main.js" defer></script>
+<script>
+document.addEventListener('DOMContentLoaded', ()=>{
+  const params = new URLSearchParams(location.search);
+  const id = params.get('id');
+  if(!id){ document.getElementById('content').innerHTML='<p>Missing blog id.</p>'; return; }
+  loadFirebaseAndInit(()=>{
+    db.collection('blogs').doc(id).get().then(d=>{
+      if(!d.exists){ document.getElementById('content').innerHTML='<p>Blog not found.</p>'; return; }
+      const b = d.data();
+      document.getElementById('title').textContent = b.title;
+      document.getElementById('body').innerHTML = (b.content || '').replace(/\n/g,'<br>');
+      loadComments(id);
+    }).catch(err=>{ console.error(err); });
+  });
+});
+
+function loadComments(blogId){
+  const list = document.getElementById('commentsList');
+  list.innerHTML='<p class="small">Loading comments...</p>';
+  db.collection('comments').where('blogId','==',blogId).orderBy('createdAt','desc').get().then(snap=>{
+    list.innerHTML='';
+    if(snap.empty) list.innerHTML='<p class="small">No comments yet. Be the first to share.</p>';
+    snap.forEach(doc=>{
+      const c = doc.data();
+      const el = document.createElement('div');
+      el.className='blog-card';
+      el.innerHTML = `<p><strong>${escapeHtml(c.name||'Anonymous')}</strong> <span class="small">${fmtDate(c.createdAt)}</span></p>
+                      <p>${escapeHtml(c.text)}</p>`;
+      // comments are only visible to admin page; public view shows nothing except comment form
+      list.appendChild(el);
+    });
+  });
+}
+
+function submitComment(ev){
+  ev.preventDefault();
+  const name = document.getElementById('cname').value || 'Anonymous';
+  const text = document.getElementById('ctext').value;
+  const params = new URLSearchParams(location.search);
+  const blogId = params.get('id');
+  if(!text){ showToast('Please write a comment'); return; }
+  db.collection('comments').add({
+    blogId, name, text, createdAt: firebase.firestore.FieldValue.serverTimestamp()
+  }).then(()=>{ showToast('Comment sent to admin'); document.getElementById('ctext').value=''; })
+  .catch(e=>{ console.error(e); showToast('Failed to send comment'); });
+}
+
+function escapeHtml(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;'); }
+</script>
+</head>
+<body>
+  <div class="bg" style="background-image:url('blogbg.png')">
+  <div class="container">
+  <!-- Blog Content Box -->
+  <div class="blog-content-box">
+    <h1 id="title">Loading...</h1>
+    <div id="body" class="small"></div>
+  </div>
+  
+  <hr>
+  <h3>Leave a comment (visible to admin only)</h3>
+  <form onsubmit="submitComment(event)">
+    <label for="cname">Name</label>
+    <input id="cname" placeholder="Your name (optional)">
+    <label for="ctext">Comment</label>
+    <textarea id="ctext" rows="4" placeholder="Write your comment"></textarea>
+    <div><button class="btn" type="submit">Post</button></div>
+  </form>
+  
+  <hr>
+  
+  <div class="home-link"><a class="btn" href="index.html">Home</a></div>
+</div>
+
+  </div>
+</body>
+</html>

@@ -1,0 +1,36 @@
+
+<!doctype html>
+<html><head>
+<meta charset="utf-8"><title>Admin Panel - VOICE OF ELIZUBA</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="stylesheet" href="styles.css">
+<script src="main.js" defer></script>
+<script>
+function ensureAdmin(){ if(!localStorage.getItem('voe_admin')){ alert('Please login as admin'); location.href='adminlogin.html'; } }
+
+document.addEventListener('DOMContentLoaded', ()=>{
+  ensureAdmin();
+  // button handlers
+  document.getElementById('addBlogBtn').addEventListener('click', ()=> location.href='addblog.html');
+  document.getElementById('viewCommentsBtn').addEventListener('click', ()=> location.href='comments.html');
+  document.getElementById('editProfileBtn').addEventListener('click', ()=> location.href='editprofile.html');
+  document.getElementById('manageBlogBtn').addEventListener('click', ()=> location.href='manageblog.html');
+  document.getElementById('homeBtn').addEventListener('click', ()=> location.href='index.html');
+});
+</script>
+</head>
+<body>
+  <div class="bg" style="background-image:url('adminbg.png')">
+    <div class="container center">
+      <h1>Admin Panel</h1>
+      <div class="admin-buttons">
+        <button id="addBlogBtn" class="btn">Add Blog</button>
+        <button id="viewCommentsBtn" class="btn">View Comments</button>
+        <button id="editProfileBtn" class="btn">Edit Profile</button>
+        <button id="manageBlogBtn" class="btn">Manage Blog</button>
+        <button id="homeBtn" class="btn ghost">Home</button>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
